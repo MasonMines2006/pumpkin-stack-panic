@@ -1,0 +1,25 @@
+{
+  "name": "pumpkin-stack-game",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c magenta,cyan \"npm run dev -w @pumpkin/server\" \"npm run dev -w @pumpkin/client\"",
+    "dev:lan": "concurrently -n server,client -c magenta,cyan \"HOST=0.0.0.0 npm run dev -w @pumpkin/server\" \"npm run dev -w @pumpkin/client -- --host 0.0.0.0\"",
+    "build": "npm run build -w @pumpkin/shared && npm run build -w @pumpkin/server && npm run build -w @pumpkin/client",
+    "typecheck": "npm run typecheck -ws --if-present",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.4"
+  }
+}
