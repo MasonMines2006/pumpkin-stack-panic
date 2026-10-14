@@ -13,7 +13,25 @@ npm run dev
 
 Open `http://localhost:5173` in two browser tabs. Create a room for the TA in the first tab, join its four-letter code as a student in the second, and start PVP or PVE from the host tab. The TA is a spectator and does not receive pumpkins or count toward scoring.
 
-The client defaults to `http://localhost:3001` for the server. Set `VITE_SERVER_URL` when the client and server use different origins.
+In development the client talks to port `3001` on whatever host served the page. In production one server serves both the page and the game, so the client uses its own origin. Set `VITE_SERVER_URL` only if the server lives somewhere else.
+
+## Classroom on the same Wi-Fi (backup option)
+
+```bash
+npm run dev:lan
+```
+
+Students open the `Students join at …` address the server prints. Campus networks often block device-to-device traffic, so prefer the hosted version below.
+
+## Deploy (Render)
+
+`render.yaml` describes a single free Render web service: `npm ci --include=dev && npm run build`, then `npm start`. Express serves `apps/client/dist` and Socket.IO from one URL.
+
+- Free instances sleep after ~15 idle minutes; open the site a few minutes before class so it is awake.
+- Rooms live in memory: a redeploy or restart ends every room, so do not push during class.
+- Keep exactly one instance; rooms are not shared between servers.
+
+Run the production build locally with `npm run build && npm start` (serves on port 3001).
 
 ## Commands
 

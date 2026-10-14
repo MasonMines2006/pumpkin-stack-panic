@@ -23,6 +23,10 @@ type ServerOptions = {
   host?: string;
   /** How long a disconnected TA has to come back before their room is closed. */
   hostGraceMs?: number;
+  /** Folder of built client files (apps/client/dist). When set, this server also serves the game page. */
+  clientDir?: string;
+  /** The /network route only helps LAN play; turn it off on a public host. Defaults to true. */
+  exposeNetworkInfo?: boolean;
   commandDelayMs?: number;
   roundDurationMs?: number;
   stackSize?: number;
@@ -47,8 +51,15 @@ export async function createGameServer(
   const app = express();
   app.use(cors());
   app.get("/health", (_request, response) => response.json({ ok: true }));
-  // Lets the TA lobby show a join address students can actually reach.
-  app.get("/network", (_request, response) => response.json({ lanAddresses: listLanAddresses() }));
+  if (options.exposeNetworkInfo ?? true) {
+    // Lets the TA lobby show a join address students can actually reach on LAN.
+    app.get("/network", (_request, response) => response.json({ lanAddresses: listLanAddresses() }));
+  }
+  if (options.clientDir) {
+    // Production: one server hands out the page *and* runs the game, so the page
+    // and the socket share an address and students only ever need one URL.
+    app.use(express.static(options.clientDir));
+  }
 
   const httpServer = createServer(app);
   const io = new Server(httpServer, {

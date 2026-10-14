@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildJoinUrl, parseLanAddresses, resolveServerUrl } from "./connection.js";
+import { buildJoinUrl, isLoopbackHost, parseLanAddresses, resolveServerUrl } from "./connection.js";
 
 describe("resolveServerUrl", () => {
   it("uses an explicit VITE_SERVER_URL when one is configured", () => {
@@ -15,6 +15,11 @@ describe("resolveServerUrl", () => {
     const page = { protocol: "http:", hostname: "192.168.1.42" };
     expect(resolveServerUrl(page, "   ")).toBe("http://192.168.1.42:3001");
     expect(resolveServerUrl(page, " http://10.0.0.5:4000/ ")).toBe("http://10.0.0.5:4000");
+  });
+
+  it("talks to the page's own origin in a production build, where one server serves both", () => {
+    const page = { protocol: "https:", hostname: "pumpkin-stack.onrender.com", port: "" };
+    expect(resolveServerUrl(page, undefined, false)).toBe("https://pumpkin-stack.onrender.com");
   });
 
   it("keeps working on the development computer", () => {
@@ -51,5 +56,14 @@ describe("parseLanAddresses", () => {
     expect(parseLanAddresses(null)).toEqual([]);
     expect(parseLanAddresses({ lanAddresses: "192.168.1.42" })).toEqual([]);
     expect(parseLanAddresses({ lanAddresses: [42] })).toEqual([]);
+  });
+});
+
+describe("isLoopbackHost", () => {
+  it("recognises addresses that only work on this computer", () => {
+    expect(isLoopbackHost("localhost")).toBe(true);
+    expect(isLoopbackHost("127.0.0.1")).toBe(true);
+    expect(isLoopbackHost("pumpkin-stack.onrender.com")).toBe(false);
+    expect(isLoopbackHost("192.168.1.42")).toBe(false);
   });
 });

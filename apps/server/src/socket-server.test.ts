@@ -1,3 +1,6 @@
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { io as createClient, type Socket } from "socket.io-client";
 import { createGameServer, type RunningGameServer } from "./socket-server.js";
@@ -199,6 +202,23 @@ describe("socket game server", () => {
     await request(host, "room:create", { name: "TA" });
 
     await expect(closed).resolves.toMatch(/closed/i);
+  });
+
+  it("serves the built client from the same address as the game in production", async () => {
+    // Arrange: a fake "built client" folder with one page in it.
+    const clientDir = mkdtempSync(join(tmpdir(), "pumpkin-client-"));
+    writeFileSync(join(clientDir, "index.html"), "<h1>Pumpkin Stack Panic</h1>");
+    server = await createGameServer({ port: 0, clientDir, exposeNetworkInfo: false });
+
+    // Act
+    const page = await fetch(`${server.url}/`);
+    const health = await fetch(`${server.url}/health`);
+    const network = await fetch(`${server.url}/network`);
+
+    // Assert
+    expect(await page.text()).toContain("Pumpkin Stack Panic");
+    expect(health.status).toBe(200);
+    expect(network.status).toBe(404); // LAN details are pointless (and private) on a public host.
   });
 });
 

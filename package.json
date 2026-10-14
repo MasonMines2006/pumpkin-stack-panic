@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -10,6 +13,7 @@
   "scripts": {
     "dev": "concurrently -n server,client -c magenta,cyan \"npm run dev -w @pumpkin/server\" \"npm run dev -w @pumpkin/client\"",
     "dev:lan": "concurrently -n server,client -c magenta,cyan \"HOST=0.0.0.0 npm run dev -w @pumpkin/server\" \"npm run dev -w @pumpkin/client -- --host 0.0.0.0\"",
+    "start": "NODE_ENV=production node apps/server/dist/index.js",
     "build": "npm run build -w @pumpkin/shared && npm run build -w @pumpkin/server && npm run build -w @pumpkin/client",
     "typecheck": "npm run typecheck -ws --if-present",
     "test": "vitest run",

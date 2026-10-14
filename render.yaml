@@ -1,0 +1,22 @@
+# Render "Blueprint": tells Render how to build and run the game.
+# Render reads this file automatically when you create a Blueprint from the GitHub repo.
+services:
+  - type: web
+    name: pumpkin-stack-panic
+    runtime: node
+    plan: free
+    # --include=dev is needed because TypeScript and Vite are devDependencies,
+    # and npm skips those when NODE_ENV=production.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    # Rooms live in memory, so the game must run as exactly one server.
+    numInstances: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Listen on every network interface so Render's router can reach the server.
+      - key: HOST
+        value: 0.0.0.0

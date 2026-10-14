@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { buildJoinUrl, parseLanAddresses } from "./connection.js";
+import { buildJoinUrl, isLoopbackHost, parseLanAddresses } from "./connection.js";
 import { serverUrl } from "./socket.js";
 
 /**
@@ -11,7 +11,9 @@ export function useJoinUrl(isEnabled: boolean): string {
   const [lanAddresses, setLanAddresses] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!isEnabled) return;
+    // On a real domain (or a LAN address) the page's own URL is already shareable,
+    // so we only need the LAN lookup when the TA opened "localhost".
+    if (!isEnabled || !isLoopbackHost(window.location.hostname)) return;
     // Cancels the request if the lobby closes (e.g. the game starts) before it answers.
     const controller = new AbortController();
     fetch(`${serverUrl}/network`, { signal: controller.signal })
